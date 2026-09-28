@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>삼익제약 재무분석 대시보드</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+    h1, h2 { color: #1a365d; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .chart-container { position: relative; height: 350px; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
+    th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #e2e8f0; }
+    th { background-color: #2b6cb0; color: white; text-align: center; }
+    td:first-child, th:first-child { text-align: center; }
+    tr:nth-child(even) { background-color: #f7fafc; }
+    tr:hover { background-color: #edf2f7; }
+    .badge { background-color: #319795; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏥 삼익제약(014950) DART 재무분석 대시보드</h1>
+    <p>자동 업데이트 에이전트에 의해 매월 1일 동기화되는 주요 재무 수치 대시보드입니다.</p>
+
+    <!-- 시각화 영역 -->
+    <div class="card">
+      <h2>📊 연도별 주요 재무 추이 (Annual)</h2>
+      <div class="chart-container">
+        <canvas id="financialChart"></canvas>
+      </div>
+    </div>
+
+    <!-- 테이블 영역 1: Annual -->
+    <div class="card">
+      <h2>📅 Annual (연간 실적)</h2>
+      <div style="overflow-x:auto;">
+        <table id="annualTable">
+          <thead>
+            <tr>
+              <th>연도</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
+              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 테이블 영역 2: Half-year -->
+    <div class="card">
+      <h2>🌓 Half-Year (반기 실적)</h2>
+      <div style="overflow-x:auto;">
+        <table id="halfTable">
+          <thead>
+            <tr>
+              <th>연도</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
+              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 테이블 영역 3: Quarterly -->
+    <div class="card">
+      <h2>Quarterly (분기 실적)</h2>
+      <div style="overflow-x:auto;">
+        <table id="quarterlyTable">
+          <thead>
+            <tr>
+              <th>연도/분기</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
+              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 국내 Peer Firms 비교 테이블 -->
+    <div class="card">
+      <h2>🏢 국내 유사 동종기업 (Peer Firms) 비교</h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>기업명</th><th>종목코드</th><th>주요 사업 영역</th><th>비교 특징</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><b>삼익제약</b></td><td>014950</td><td>전문/일반의약품, 정제·캡슐제</td><td>분석 대상 기준기업</td></tr>
+            <tr><td>동구바이오제약</td><td>006620</td><td>피부과·비뇨기과 전문의약품 및 CMO</td><td>중소형 제약사 경쟁군</td></tr>
+            <tr><td>신일제약</td><td>012790</td><td>소염진통제(플라스타), 처방의약품</td><td>유사 매출규모 제약사</td></tr>
+            <tr><td>진양제약</td><td>003570</td><td>순환기계 및 소화기계 전문의약품</td><td>유사 사업구조 경쟁군</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
