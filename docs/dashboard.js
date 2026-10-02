@@ -21,12 +21,12 @@ function renderCharts(rows){
 }
 const cols=[
  ["year_period","기간"],["revenue","매출액"],["gross_profit","매출총이익"],["operating_income","영업이익"],["net_income","당기순이익"],
- ["operating_margin","영업이익률"],["net_margin","순이익률"],["operating_cash_flow","CFO"],["free_cash_flow","FCF"],["net_debt","순차입금"],
+ ["operating_margin","영업이익률"],["net_margin","순이익률"],["operating_cash_flow","CFO"],["free_cash_flow","FCF"],["net_debt","순차입금"],["ebitda","EBITDA"],["net_debt_to_ebitda","순차입금/EBITDA"],
  ["debt_to_equity","부채비율"],["interest_coverage","이자보상배율"],["roic","ROIC"],["roe","ROE"],["roa","ROA"],["ccc","CCC"],["eps","EPS"]
 ];
 function renderTable(id,rows){
  let h="<thead><tr>"+cols.map(c=>`<th>${c[1]}</th>`).join("")+"</tr></thead><tbody>";
- for(const r of rows.slice().reverse()) h+="<tr>"+cols.map(([k])=>`<td>${k.includes("margin")||["debt_to_equity","roic","roe","roa"].includes(k)?pct(r[k]):k==="interest_coverage"?fmt(r[k],2):k==="ccc"?fmt(r[k],1):k==="eps"?fmt(r[k],2):fmt(r[k])}</td>`).join("")+"</tr>";
+ for(const r of rows.slice().reverse()) h+="<tr>"+cols.map(([k])=>`<td>${k.includes("margin")||["debt_to_equity","roic","roe","roa"].includes(k)?pct(r[k]):k==="interest_coverage"||k==="net_debt_to_ebitda"?fmt(r[k],2):k==="ccc"?fmt(r[k],1):k==="eps"?fmt(r[k],2):fmt(r[k])}</td>`).join("")+"</tr>";
  $(id).innerHTML=h+"</tbody>";
 }
 function renderPeers(rows){
