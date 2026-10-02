@@ -1,107 +1,37 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>삼익제약 재무분석 대시보드</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
-    h1, h2 { color: #1a365d; }
-    .container { max-width: 1200px; margin: 0 auto; }
-    .card { background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .chart-container { position: relative; height: 350px; width: 100%; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.9em; }
-    th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #e2e8f0; }
-    th { background-color: #2b6cb0; color: white; text-align: center; }
-    td:first-child, th:first-child { text-align: center; }
-    tr:nth-child(even) { background-color: #f7fafc; }
-    tr:hover { background-color: #edf2f7; }
-    .badge { background-color: #319795; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>삼익제약 DART 재무분석</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#162033;--muted:#64748b;--line:#e5eaf1;--navy:#173b68;--blue:#2563eb}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans KR",system-ui,-apple-system,sans-serif}
+.wrap{max-width:1440px;margin:auto;padding:28px 22px 60px}.hero{background:linear-gradient(135deg,#173b68,#2563eb);color:#fff;border-radius:22px;padding:30px 34px;box-shadow:0 12px 35px #173b6820}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;opacity:.88}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.pill{padding:7px 11px;border:1px solid #ffffff35;border-radius:999px;background:#ffffff12;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:20px 0}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 6px 20px #1e293b08}.kpi .label{color:var(--muted);font-size:13px}.kpi .value{font-size:25px;font-weight:800;margin-top:7px}.kpi .sub{font-size:12px;color:var(--muted);margin-top:4px}
+.section{margin-top:22px}.section h2{margin:0 0 12px;font-size:20px}.charts{display:grid;grid-template-columns:2fr 1fr;gap:16px}.chartbox{height:350px;position:relative}.chartbox.small{height:300px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:1050px;font-size:13px}th{position:sticky;top:0;background:#173b68;color:#fff;padding:11px 10px;text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:center}td{padding:10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}tr:nth-child(even) td{background:#f8fafc}.note{color:var(--muted);font-size:12px;line-height:1.6;margin-top:9px}.status{display:inline-block;padding:3px 8px;border-radius:999px;background:#eaf2ff;color:#1d4ed8;font-weight:700}
+footer{margin-top:28px;color:var(--muted);font-size:12px}
+@media(max-width:950px){.grid{grid-template-columns:repeat(2,1fr)}.charts{grid-template-columns:1fr}}@media(max-width:600px){.wrap{padding:15px}.grid{grid-template-columns:1fr}.hero{padding:24px}.hero h1{font-size:24px}}
+</style>
 </head>
-<body>
-  <div class="container">
-    <h1>🏥 삼익제약(014950) DART 재무분석 대시보드</h1>
-    <p>자동 업데이트 에이전트에 의해 매월 1일 동기화되는 주요 재무 수치 대시보드입니다.</p>
+<body><main class="wrap">
+<section class="hero"><h1>삼익제약(014950) DART 재무분석</h1><p>사업·반기·분기보고서 기반 자동 재무데이터 및 비율 분석</p><div class="meta"><span class="pill" id="coverage">데이터 범위 확인 중</span><span class="pill" id="updated">업데이트 확인 중</span><span class="pill">DART Open API</span><a class="pill" href="https://github.com/HSC-Class01/Yc_samik" style="color:white;text-decoration:none">GitHub Repository ↗</a></div></section>
 
-    <!-- 시각화 영역 -->
-    <div class="card">
-      <h2>📊 연도별 주요 재무 추이 (Annual)</h2>
-      <div class="chart-container">
-        <canvas id="financialChart"></canvas>
-      </div>
-    </div>
+<section class="grid" id="kpis"></section>
+<section class="section"><h2>📈 핵심 재무 추이</h2><div class="charts">
+<div class="card"><div class="chartbox"><canvas id="trend"></canvas></div></div>
+<div class="card"><div class="chartbox small"><canvas id="margin"></canvas></div></div>
+</div></section>
 
-    <!-- 테이블 영역 1: Annual -->
-    <div class="card">
-      <h2>📅 Annual (연간 실적)</h2>
-      <div style="overflow-x:auto;">
-        <table id="annualTable">
-          <thead>
-            <tr>
-              <th>연도</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
-              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
+<section class="section"><h2>💰 현금흐름·재무안정성</h2><div class="charts">
+<div class="card"><div class="chartbox small"><canvas id="cash"></canvas></div></div>
+<div class="card"><div class="chartbox small"><canvas id="risk"></canvas></div></div>
+</div></section>
 
-    <!-- 테이블 영역 2: Half-year -->
-    <div class="card">
-      <h2>🌓 Half-Year (반기 실적)</h2>
-      <div style="overflow-x:auto;">
-        <table id="halfTable">
-          <thead>
-            <tr>
-              <th>연도</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
-              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 테이블 영역 3: Quarterly -->
-    <div class="card">
-      <h2>Quarterly (분기 실적)</h2>
-      <div style="overflow-x:auto;">
-        <table id="quarterlyTable">
-          <thead>
-            <tr>
-              <th>연도/분기</th><th>매출액(원)</th><th>영업이익(원)</th><th>당기순이익(원)</th>
-              <th>영업이익률(%)</th><th>순이익률(%)</th><th>부채비율(%)</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 국내 Peer Firms 비교 테이블 -->
-    <div class="card">
-      <h2>🏢 국내 유사 동종기업 (Peer Firms) 비교</h2>
-      <div style="overflow-x:auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>기업명</th><th>종목코드</th><th>주요 사업 영역</th><th>비교 특징</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr><td><b>삼익제약</b></td><td>014950</td><td>전문/일반의약품, 정제·캡슐제</td><td>분석 대상 기준기업</td></tr>
-            <tr><td>동구바이오제약</td><td>006620</td><td>피부과·비뇨기과 전문의약품 및 CMO</td><td>중소형 제약사 경쟁군</td></tr>
-            <tr><td>신일제약</td><td>012790</td><td>소염진통제(플라스타), 처방의약품</td><td>유사 매출규모 제약사</td></tr>
-            <tr><td>진양제약</td><td>003570</td><td>순환기계 및 소화기계 전문의약품</td><td>유사 사업구조 경쟁군</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <script src="dashboard.js"></script>
-</body>
-</html>
+<section class="section"><h2>📊 Annual</h2><div class="card"><div class="table-wrap"><table id="annual"></table></div></div></section>
+<section class="section"><h2>🌓 Half-year</h2><div class="card"><div class="table-wrap"><table id="half"></table></div></div></section>
+<section class="section"><h2>📅 Quarterly</h2><div class="card"><div class="table-wrap"><table id="quarterly"></table></div><div class="note">Q3 손익·현금흐름의 standalone 값은 DART의 Q3 누적값에서 반기 누적값을 차감해 산출합니다. 재무상태표 항목은 보고기간 말 잔액입니다.</div></div></section>
+<section class="section"><h2>🏢 국내 Peer Firms</h2><div class="card"><div class="table-wrap"><table id="peers"></table></div><div class="note">Peer는 국내 상장 제약기업 가운데 사업영역과 규모를 고려한 비교군입니다. 투자 판단용 순위가 아니라 재무구조 비교를 위한 참고군입니다.</div></div></section>
+<footer>본 대시보드는 DART Open API 공시 재무정보를 자동 수집·정리합니다. API가 제공하지 않는 2010~2014년 재무수치는 임의로 생성하지 않습니다.</footer>
+</main><script src="dashboard.js"></script></body></html>
