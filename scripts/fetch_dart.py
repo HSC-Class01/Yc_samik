@@ -51,8 +51,12 @@ def num(v):
 
 def choose_fs(rows):
     # Prefer consolidated statements; otherwise separate statements.
-    c=[x for x in rows if x.get("fs_div")=="CFS"]
-    return c if c else [x for x in rows if x.get("fs_div")=="OFS"]
+    # Some filings may omit fs_div in individual rows; never discard all rows.
+    c=[x for x in rows if str(x.get("fs_div","")).upper()=="CFS"]
+    if c: return c
+    o=[x for x in rows if str(x.get("fs_div","")).upper()=="OFS"]
+    if o: return o
+    return rows
 
 def account_map(rows):
     m={}
@@ -176,7 +180,12 @@ def main():
                     p=raw_root/str(year)
                     p.mkdir(parents=True,exist_ok=True)
                     (p/f"{label}.json").write_text(json.dumps({"year":year,"report_code":code,"corp_code":cc,"list":rows},ensure_ascii=False,indent=2),encoding="utf-8")
-                    all_records.append(build_record(year,code,rows))
+                    record=build_record(year,code,rows)
+                    core=[record.get(k) for k in ("revenue","operating_income","net_income","assets","liabilities","equity")]
+                    if any(v is not None for v in core):
+                        all_records.append(record)
+                    else:
+                        unavailable.append({"year":year,"report":label,"reason":"DART 응답은 존재하지만 핵심 재무계정 정규화 실패"})
                 else:
                     unavailable.append({"year":year,"report":label,"reason":"DART 응답 데이터 없음"})
             except Exception as e:
@@ -205,6 +214,8 @@ def main():
                 a,b=r.get(base),prev.get(base)
                 r[key]=round((a-b)/abs(b)*100,2) if a is not None and b not in (None,0) else None
 
+    if not all_records:
+        raise RuntimeError("No usable financial records were collected. Check DART_API_KEY and account mapping.")
     all_records.sort(key=lambda x:(x["year"],["Annual","Half-year","Q1","Q3"].index(x["report"])))
     for r in all_records:
         r["year_period"]=f'{r["year"]} {r["report"]}'
