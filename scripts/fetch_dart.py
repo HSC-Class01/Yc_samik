@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import requests
 
-API="https://opendart.fss.or.kr/api"
+API="https://opendart.fss.or.kr/api"  # OpenDART REST API
 KEY=os.getenv("DART_API_KEY")
 STOCK="014950"
 START=2010
