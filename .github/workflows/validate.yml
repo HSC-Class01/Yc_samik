@@ -1,0 +1,27 @@
+name: Validate DART Agent
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m py_compile scripts/fetch_dart.py
+      - run: python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path("docs/data.json")
+          assert p.exists(), "docs/data.json missing"
+          json.loads(p.read_text(encoding="utf-8"))
+          print("dashboard data JSON OK")
+        PY
+      - run: test -f docs/index.html && test -f docs/dashboard.js && test -f .github/workflows/update_data.yml
