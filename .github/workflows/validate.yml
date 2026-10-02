@@ -14,14 +14,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
-      - run: python -m py_compile scripts/fetch_dart.py
-      - run: python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path("docs/data.json")
-          assert p.exists(), "docs/data.json missing"
-          json.loads(p.read_text(encoding="utf-8"))
-          print("dashboard data JSON OK")
-        PY
-      - run: test -f docs/index.html && test -f docs/dashboard.js && test -f .github/workflows/update_data.yml
+          python-version: "3.11"
+      - name: Python syntax
+        run: python -m py_compile scripts/fetch_dart.py
+      - name: Validate dashboard JSON
+        run: python -c "import json; json.load(open('docs/data.json', encoding='utf-8')); print('dashboard data JSON OK')"
+      - name: Validate dashboard files
+        run: test -f docs/index.html && test -f docs/dashboard.js && test -f .github/workflows/update_data.yml
