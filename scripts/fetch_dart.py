@@ -103,10 +103,13 @@ def build_record(year, code, rows):
     ap=value(m,["매입채무"])
     cfo=income_value(m,["영업활동현금흐름","영업활동으로인한현금흐름"])
     capex=income_value(m,["유형자산의취득","유형자산 취득","유형자산의 취득"])
+    if capex is not None: capex=abs(capex)
     interest=income_value(m,["이자비용","금융원가"])
+    depreciation=income_value(m,["감가상각비"])
+    amortization=income_value(m,["무형자산상각비","무형자산 상각비"])
     debt=sum(x or 0 for x in [value(m,["단기차입금"]),value(m,["장기차입금"]),value(m,["유동성장기부채"]),value(m,["사채"]),value(m,["전환사채"])])
     shares=income_value(m,["가중평균유통보통주식수","기본주당이익 계산에 사용된 가중평균유통보통주식수"])
-    days={"annual":365,"half":181,"q1":90,"q3":273}.get(label.lower(),90)
+    days={"Annual":365,"Half-year":181,"Q1":90,"Q3":273}.get(label,90)
     # API gives YTD for interim IS; q3 standalone is derived later from Q3 YTD - H1.
     out={
       "year":year,"report_code":code,"report":label,"currency":"KRW",
@@ -115,7 +118,7 @@ def build_record(year, code, rows):
       "assets":assets,"liabilities":liab,"equity":equity,"cash":cash,
       "accounts_receivable":ar,"inventory":inv,"accounts_payable":ap,
       "operating_cash_flow":cfo,"capex":capex,"interest_expense":interest,
-      "interest_bearing_debt":debt or None,"shares":shares,
+      "interest_bearing_debt":debt or None,"depreciation":depreciation,"amortization":amortization,"shares":shares,
       "tax_expense":tax,"pretax_income":pbt,
       "source_filing":rows[0].get("rcept_no") if rows else None,
       "source_url":f"https://dart.fss.or.kr/dsaf001/main.do?rcpNo={rows[0].get('rcept_no')}" if rows and rows[0].get("rcept_no") else None,
@@ -129,6 +132,10 @@ def build_record(year, code, rows):
     if assets not in (None,0) and liab is not None: out["liabilities_to_assets"]=round(liab/assets*100,2)
     if ni is not None and cfo is not None and ni!=0: out["cfo_to_net_income"]=round(cfo/ni,2)
     out["free_cash_flow"]=cfo-capex if cfo is not None and capex is not None else None
+    if op is not None:
+        ebitda=op+(depreciation or 0)+(amortization or 0)
+        out["ebitda"]=ebitda
+        if debt is not None and cash is not None and ebitda: out["net_debt_to_ebitda"]=round((debt-cash)/ebitda,2)
     out["net_debt"]=debt-cash if debt is not None and cash is not None else None
     if debt is not None and cash is not None and op is not None:
         out["net_debt_to_operating_income"]=round((debt-cash)/op,2) if op else None
