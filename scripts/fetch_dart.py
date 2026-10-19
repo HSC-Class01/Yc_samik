@@ -59,33 +59,43 @@ def choose_fs(rows):
     return rows
 
 def account_map(rows):
+    # Keep statement divisions separate. OpenDART repeats account IDs across
+    # BS/CIS/CF/SCE; collapsing by account_id alone overwrites correct values
+    # (for example, net income in CIS can be replaced by a zero row in SCE).
     m={}
     for r in choose_fs(rows):
-        key=(r.get("account_id") or r.get("account_nm") or "").strip()
-        name=(r.get("account_nm") or "").strip()
-        if not key: continue
-        if key not in m: m[key]=dict(r)
-        # Keep the row with a useful amount.
-        if num(r.get("thstrm_amount")) is not None or num(r.get("thstrm_add_amount")) is not None:
-            m[key]=dict(r)
-        m[key]["account_nm"]=name
-    return m
+        key=(r.get("sj_div",""), (r.get("account_id") or r.get("account_nm") or "").strip())
+        if not key[1]: continue
+        row=dict(r)
+        if key not in m:
+            m[key]=row
+        else:
+            old=m[key]
+            old_has=any(num(old.get(k)) is not None for k in ("thstrm_amount","thstrm_add_amount"))
+            new_has=any(num(row.get(k)) is not None for k in ("thstrm_amount","thstrm_add_amount"))
+            if new_has and not old_has:
+                m[key]=row
+    return list(m.values())
 
-def find(m, names):
-    for row in m.values():
-        n=(row.get("account_nm") or "").replace(" ","")
-        for target in names:
-            if target.replace(" ","") in n:
-                return row
+def find(m, names, sections=None):
+    targets=[x.replace(" ","") for x in names]
+    rows=[r for r in m if sections is None or r.get("sj_div") in sections]
+    # Prefer exact account-name matches before substring aliases.
+    for exact in (True,False):
+        for target in targets:
+            for row in rows:
+                n=(row.get("account_nm") or "").replace(" ","")
+                if (n==target) if exact else (target in n):
+                    return row
     return None
 
-def value(m,names,field="thstrm_amount"):
-    r=find(m,names)
+def value(m,names,field="thstrm_amount",sections=("BS",)):
+    r=find(m,names,sections)
     return num(r.get(field)) if r else None
 
-def income_value(m,names):
+def income_value(m,names,sections=("CIS","IS")):
     # For interim income statements, use accumulated amount for YTD.
-    r=find(m,names)
+    r=find(m,names,sections)
     if not r: return None
     return num(r.get("thstrm_add_amount")) if num(r.get("thstrm_add_amount")) is not None else num(r.get("thstrm_amount"))
 
@@ -105,8 +115,8 @@ def build_record(year, code, rows):
     ar=value(m,["매출채권"])
     inv=value(m,["재고자산"])
     ap=value(m,["매입채무"])
-    cfo=income_value(m,["영업활동현금흐름","영업활동으로인한현금흐름"])
-    capex=income_value(m,["유형자산의취득","유형자산 취득","유형자산의 취득"])
+    cfo=income_value(m,["영업활동현금흐름","영업활동으로인한현금흐름"],("CF",))
+    capex=income_value(m,["유형자산의취득","유형자산 취득","유형자산의 취득"],("CF",))
     if capex is not None: capex=abs(capex)
     interest=income_value(m,["이자비용","금융원가"])
     depreciation=income_value(m,["감가상각비"])
