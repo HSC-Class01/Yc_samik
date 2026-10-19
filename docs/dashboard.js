@@ -26,7 +26,7 @@ const cols=[
 ];
 function renderTable(id,rows){
  let h="<thead><tr>"+cols.map(c=>`<th>${c[1]}</th>`).join("")+"</tr></thead><tbody>";
- for(const r of rows.slice().reverse()) h+="<tr>"+cols.map(([k])=>`<td>${k.includes("margin")||["debt_to_equity","roic","roe","roa"].includes(k)?pct(r[k]):k==="interest_coverage"||k==="net_debt_to_ebitda"?fmt(r[k],2):k==="ccc"?fmt(r[k],1):k==="eps"?fmt(r[k],2):fmt(r[k])}</td>`).join("")+"</tr>";
+ for(const r of rows.slice().reverse()) h+="<tr>"+cols.map(([k])=>`<td>${k==="year_period"?r[k]:k.includes("margin")||["debt_to_equity","roic","roe","roa"].includes(k)?pct(r[k]):k==="interest_coverage"||k==="net_debt_to_ebitda"?fmt(r[k],2):k==="ccc"?fmt(r[k],1):k==="eps"?fmt(r[k],2):fmt(r[k])}</td>`).join("")+"</tr>";
  $(id).innerHTML=h+"</tbody>";
 }
 function renderPeers(rows){
